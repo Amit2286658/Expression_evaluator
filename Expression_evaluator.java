@@ -36,7 +36,7 @@ public class ExpressionEvaluator {
         ADD('+', 1),
         SUBTRACT('-', 1),
         MULTIPLY('*', 2, "x"),
-        DIVIDE('/', 2),
+        DIVIDE('/', 2, "÷"),
         EXPONENT('^', 3),
         SINE('S', 4, TYPE.POST, "sin"),
         COSINE('C', 4, TYPE.POST, "cos"),
