@@ -1,3 +1,5 @@
+package com.account_project.console;
+
 import java.math.BigDecimal;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -7,7 +9,7 @@ import java.util.regex.Pattern;
  * execution on sololearn can take upto 30 ms more,
  * compared to execution on local machines.
  */
-public class ExpressionEvaluator {
+public class Main {
 
     private static Scanner scan = new Scanner(System.in);
 
@@ -699,12 +701,16 @@ public class ExpressionEvaluator {
             }
             switch (operator_type) {
                 case POST:
+                    if (i != 0)
+                        higherBuilder += "*";
                     higherBuilder += op1.neutral_value;
                     higherBuilder += op1.operator;
                     break;
                 case PRE:
                     higherBuilder += op1.operator;
                     higherBuilder += op1.neutral_value;
+                    if (i != expression.length() - 1)
+                        higherBuilder += "*";
                     break;
                 case CONSTANT:
                     if (i != 0 && String.valueOf(expression.charAt(i-1)).matches("[1234567890]"))
