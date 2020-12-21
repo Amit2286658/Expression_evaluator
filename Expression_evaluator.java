@@ -1,5 +1,3 @@
-package com.account_project.console;
-
 import java.math.BigDecimal;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -9,10 +7,14 @@ import java.util.regex.Pattern;
  * execution on sololearn can take upto 30 ms more,
  * compared to execution on local machines.
  */
-public class Main {
+public class ExpressionEvaluator {
 
     private static Scanner scan = new Scanner(System.in);
 
+    //when set to false, the entered angle will be considered to be in radians,
+    //the angle values returned will also be in radians.
+    //when set to true, the input or the output angle values will be in degrees.
+    //use #setUseDegree to change
     private static boolean useDegree = true;
 
     public static void main(String[] args) {
@@ -24,26 +26,42 @@ public class Main {
     }
 
     enum operations{
-        //Updated it entirely, a new constant type is now supported, along with a whole suit of
-        //trigonometric and hyperbolic functions, including inverse functions.
+        // Updated it entirely, a new type, TYPE.CONSTANT is now supported, along with a whole suit of
+        // trigonometric and hyperbolic functions, including inverse functions.
+        // the bug which automatically added a multiplication symbol in front of the first operator
+        // inside a bracket is solved now, try asin(sin(90)){is in degree} for example
+        // or any other expression to test.
 
-        //RESERVED CHARACTERS : S, C, T, I, O, P, H, A, W, L, V, B, X.
-        /*create custom operators here, see SINE, MODULUS, FACTORIAL for example, as they were added
-        log10 and log_e and log_d was added on 19/11/2020,
-          later on without touching any part of the codebase.
-          add a case in #function as needed and return the appropriate value for the custom
+        /* EXISTING CHARACTER OPERATORS : S, C, T, I, O, P, J, K, M, Q, R, U, s, c, t, i, o, p, j, k, m, q, r, u,
+           H, A, W, L, V, B, X, G, D, Z, Y, F, z, y, f, e.
+
+           RESERVED CHARACTERS : E.
+
+         * NOTE : Capital 'E' must never be used as an operator for any enum constant,
+           as it's a character used by BigDecimal by default, using it is guaranteed
+           to lock the program in an infinite loop.
+        */
+        /*
+        * add a case in #function as needed and return the appropriate value for the custom
           operators.
-        * the third parameter is the type, pass TYPE.POST_TYPE if the operator works with the
-          post operator value, like trigonometric functions;
-          or pass TYPE.PRE_TYPE if the operator works with the pre operator value,
-          like factorial.
+        * the type defines which operand the operator will operate on, for operators which work on post operator
+          values pass TYPE.POST, for operators which work on pre operator values pass TYPE.PRE, for operators
+          which work on both operands there's no need to pass anything, as it's the default behaviour,
+          the TYPE.CONSTANT is used for constant values like PI or natural logarithmic base,
+          the TYPE.FUNCTION is used for functions, they don't require any precedence for they will be processed
+          on top of every other operator, functions do not conflict with each other or other operators.
         * the function name is for convenience, like instead of using S30 or S(30) for sine function,
           with the name defined, you can use the name instead like sin is defined for sine function,
           which means now we can give input in this form sin(30) or sin30 or sin(-30) or sin-30.
-          all names are converted into the lowercase. so it doesn't matter, if the given name is
-          in capital or small, it will be converted to small anyways.
-        * TYPE.FUNCTION will be processed on top of everything, therefore there precedence is 0,
-          for they do not conflict with any other operator.*/
+        * function names, and their case is preserved but algorithm ignores their case anyways,
+        * by passing true to the strictCase boolean variable, we can tell the algorithm to respect the case of the
+          function names, they've been used to define EE and e, where "EE" has function name "E", while
+          the natural log base has e as an operator, in this condition, the case will not be ignored.
+          both capital and small 'e' will produce different result.
+          NOTE : none of the above enum constants be it "EE" or natural log base has capital 'E' as an operator.
+          The "EE" has 'G' as an operator while the natural log base has small 'e' as an operator.
+        */
+
         ADD('+', 1),
         SUBTRACT('-', 1),
         MULTIPLY('*', 2, "x"),
@@ -75,8 +93,8 @@ public class Main {
         COTANGENT_HYPERBOLA_INVERSE('u', 4, TYPE.POST, "acoth"),
         EE('G', 5, "E", true),
         RAND('D', 6, TYPE.CONSTANT, "rand"),
-        e('e', 6, TYPE.CONSTANT, "e", true),
-        PI('π', 6, TYPE.CONSTANT, "π"),
+        e('e', 6, TYPE.CONSTANT, true),
+        PI('π', 6, TYPE.CONSTANT),
         MODULUS('%', 3),
         FACTORIAL('!', 5, TYPE.PRE),
         HYPOTENUSE('H', TYPE.FUNCTION, "hypot", 2, new int[]{
@@ -89,7 +107,7 @@ public class Main {
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_STRING
         }),
-        ADDALL('A', TYPE.FUNCTION, "add"),
+        ADD_ALL('A', TYPE.FUNCTION, "add"),
         LOG_10('W', 5, TYPE.POST, "log10"),
         LOG_E('L', 5, TYPE.POST, "ln"),
         LOG_D('V', 5, "log"),
@@ -111,7 +129,7 @@ public class Main {
         PERIMETER_OF_CIRCLE('y', TYPE.FUNCTION, "peri[○]", 1, new int[]{
             operations.ARGUMENT_DOUBLE
         }),
-        PERIMETER_OF_TRIANGLE('f', TYPE.FUNCTION, "peri[Δ]", 2, new int[]{
+        PERIMETER_OF_TRIANGLE('f', TYPE.FUNCTION, "peri[Δ]", 3, new int[]{
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE
@@ -121,6 +139,7 @@ public class Main {
           either d1 or d2 would be just '1' if the operator is either TYPE.POST_TYPE or
           TYPE.PRE_TYPE respectively, values from d1 or d2 can be ignored in such case
           or just be multiplied since, they would be just '1', they will have no effect on the result.
+        * d1 and d2 both would be 1 if the type is #TYPE.CONSTANT, and can be safely ignored.
         * for example sine function works on post operator logic, like sin30 where sine function
           work on 30 which is after the operator, therefore post operator.
           in factorial like 5!, the factorial works on 5 which is before the operator, therefore
@@ -186,9 +205,11 @@ public class Main {
                 case 'p' :
                     return BigDecimal.valueOf(getAngle(Math.atan(1/d2.doubleValue()), true));
                 case 'j' :
-                    return BigDecimal.valueOf(Math.log(d2.doubleValue() + Math.sqrt(Math.pow(d2.doubleValue(), 2) + 1)));
+                    return BigDecimal.valueOf(Math.log(d2.doubleValue() +
+                            Math.sqrt(Math.pow(d2.doubleValue(), 2) + 1)));
                 case 'k' :
-                    return BigDecimal.valueOf(Math.log(d2.doubleValue() + Math.sqrt(Math.pow(d2.doubleValue(), 2) - 1)));
+                    return BigDecimal.valueOf(Math.log(d2.doubleValue() +
+                            Math.sqrt(Math.pow(d2.doubleValue(), 2) - 1)));
                 case 'm' :
                     return BigDecimal.valueOf((1.0/2.0)*Math.log((1 + d2.doubleValue())/(1 - d2.doubleValue())));
                 case 'q' :
@@ -216,7 +237,6 @@ public class Main {
         * this function will be called when the type is TYPE.FUNCTION,
           it returns all the values seperated by comma inside the parentheses,
           parentheses is important to encapsulate the arguments of the function.
-
         */
         public BigDecimal function(argument[] arguments){
             switch(operator){
@@ -248,7 +268,8 @@ public class Main {
                     return BigDecimal.valueOf(2 * Math.PI * arguments[0].BigDecimal_value.doubleValue());
                 case 'f' :
                     return BigDecimal.valueOf(arguments[0].BigDecimal_value.doubleValue() +
-                            arguments[1].BigDecimal_value.doubleValue() + arguments[2].BigDecimal_value.doubleValue());
+                            arguments[1].BigDecimal_value.doubleValue() +
+                            arguments[2].BigDecimal_value.doubleValue());
             }
             return BigDecimal.ZERO;
         }
@@ -436,6 +457,11 @@ public class Main {
         }else
             return angle;
     }
+
+    public static void setUseDegree(boolean shouldUseDegree) {
+        useDegree = shouldUseDegree;
+    }
+
     //end of default functions
 
     public static String Evaluate(String expression){
@@ -701,7 +727,7 @@ public class Main {
             }
             switch (operator_type) {
                 case POST:
-                    if (i != 0)
+                    if (i != 0 && expression.charAt(i - 1) != '(')
                         higherBuilder += "*";
                     higherBuilder += op1.neutral_value;
                     higherBuilder += op1.operator;
@@ -709,7 +735,7 @@ public class Main {
                 case PRE:
                     higherBuilder += op1.operator;
                     higherBuilder += op1.neutral_value;
-                    if (i != expression.length() - 1)
+                    if (i != expression.length() - 1 && expression.charAt(i + 1) != ')')
                         higherBuilder += "*";
                     break;
                 case CONSTANT:
