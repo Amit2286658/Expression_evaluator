@@ -7,6 +7,11 @@ import java.util.regex.Pattern;
  * execution on sololearn can take upto 30 ms more,
  * compared to execution on local machines.
  */
+
+/*
+ * UPDATE : I am making an android calculator based on this Algorithm.
+ * :)
+*/
 public class ExpressionEvaluator {
 
     private static Scanner scan = new Scanner(System.in);
@@ -32,33 +37,37 @@ public class ExpressionEvaluator {
         // inside a bracket is solved now, try asin(sin(90)){is in degree} for example
         // or any other expression to test.
 
-        /* EXISTING CHARACTER OPERATORS : S, C, T, I, O, P, J, K, M, Q, R, U, s, c, t, i, o, p, j, k, m, q, r, u,
-           H, A, W, L, V, B, X, G, D, Z, Y, F, z, y, f, e.
+        /* EXISTING CHARACTER OPERATORS : S, C, T, I, O, P, J, K, M, Q, R, U, s, c, t, i, o, p, j, k,
+         m, q, r, u, H, A, W, L, V, B, X, G, D, Z, Y, F, z, y, f, e, N, n, a.
 
-           RESERVED CHARACTERS : E.
+        RESERVED CHARACTERS : E.
 
-         * NOTE : Capital 'E' must never be used as an operator for any enum constant,
+        * NOTE : Capital 'E' must never be used as an operator for any enum constant,
            as it's a character used by BigDecimal by default, using it is guaranteed
            to lock the program in an infinite loop.
         */
         /*
         * add a case in #function as needed and return the appropriate value for the custom
           operators.
-        * the type defines which operand the operator will operate on, for operators which work on post operator
+        * the type defines which operand the operator will operate on, for operators which work on
+          post operator
           values pass TYPE.POST, for operators which work on pre operator values pass TYPE.PRE, for operators
           which work on both operands there's no need to pass anything, as it's the default behaviour,
           the TYPE.CONSTANT is used for constant values like PI or natural logarithmic base,
-          the TYPE.FUNCTION is used for functions, they don't require any precedence for they will be processed
+          the TYPE.FUNCTION is used for functions, they don't require any precedence for they will
+          be processed
           on top of every other operator, functions do not conflict with each other or other operators.
         * the function name is for convenience, like instead of using S30 or S(30) for sine function,
           with the name defined, you can use the name instead like sin is defined for sine function,
           which means now we can give input in this form sin(30) or sin30 or sin(-30) or sin-30.
         * function names, and their case is preserved but algorithm ignores their case anyways,
-        * by passing true to the strictCase boolean variable, we can tell the algorithm to respect the case of the
+        * by passing true to the strictCase boolean variable, we can tell the algorithm to respect
+        *  the case of the
           function names, they've been used to define EE and e, where "EE" has function name "E", while
           the natural log base has e as an operator, in this condition, the case will not be ignored.
           both capital and small 'e' will produce different result.
-          NOTE : none of the above enum constants be it "EE" or natural log base has capital 'E' as an operator.
+          NOTE : none of the above enum constants be it "EE" or natural log base has capital 'E' as
+          an operator.
           The "EE" has 'G' as an operator while the natural log base has small 'e' as an operator.
         */
 
@@ -133,7 +142,10 @@ public class ExpressionEvaluator {
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE
-        });
+        }),
+        HCF('N', TYPE.FUNCTION, "HCF"),
+        LCM('n', TYPE.FUNCTION, "LCM"),
+        DETERMINANT('a', TYPE.FUNCTION, "Determinant");
 
         /*d1 and d2 are the BigDecimal values that are just before and after the operator.
           either d1 or d2 would be just '1' if the operator is either TYPE.POST_TYPE or
@@ -211,7 +223,8 @@ public class ExpressionEvaluator {
                     return BigDecimal.valueOf(Math.log(d2.doubleValue() +
                             Math.sqrt(Math.pow(d2.doubleValue(), 2) - 1)));
                 case 'm' :
-                    return BigDecimal.valueOf((1.0/2.0)*Math.log((1 + d2.doubleValue())/(1 - d2.doubleValue())));
+                    return BigDecimal.valueOf((1.0/2.0)*Math.log((1 + d2.doubleValue())/
+                            (1 - d2.doubleValue())));
                 case 'q' :
                     return BigDecimal.valueOf(Math.log((1 + Math.sqrt(1 - Math.pow(d2.doubleValue(), 2)))/
                             d2.doubleValue()));
@@ -219,7 +232,8 @@ public class ExpressionEvaluator {
                     return BigDecimal.valueOf(Math.log((1/d2.doubleValue()) +
                             ((Math.sqrt(1 + Math.pow(d2.doubleValue(), 2)))/Math.abs(d2.doubleValue()))));
                 case 'u' :
-                    return BigDecimal.valueOf((1.0/2.0)*Math.log((d2.doubleValue() + 1) / (d2.doubleValue() - 1)));
+                    return BigDecimal.valueOf((1.0/2.0)*Math.log((d2.doubleValue() + 1) /
+                            (d2.doubleValue() - 1)));
                 case 'G' :
                     return BigDecimal.valueOf(d1.doubleValue() * Math.pow(10, d2.doubleValue()));
                 case 'D' :
@@ -228,7 +242,6 @@ public class ExpressionEvaluator {
                     return BigDecimal.valueOf(Math.PI);
                 case 'e' :
                     return BigDecimal.valueOf(Math.E);
-
             }
             return BigDecimal.ZERO;
         }
@@ -241,8 +254,8 @@ public class ExpressionEvaluator {
         public BigDecimal function(argument[] arguments){
             switch(operator){
                 case 'H' :
-                    return BigDecimal.valueOf(Math.sqrt(Math.pow(arguments[0].BigDecimal_value.doubleValue(), 2) +
-                            Math.pow(arguments[1].BigDecimal_value.doubleValue(), 2)));
+                    return BigDecimal.valueOf(Math.sqrt(Math.pow(arguments[0].BigDecimal_value.
+                            doubleValue(), 2) + Math.pow(arguments[1].BigDecimal_value.doubleValue(), 2)));
                 case 'B' :
                     return BigDecimal.valueOf(summation(arguments[0].BigDecimal_value.intValue(),
                             arguments[1].BigDecimal_value.intValue(),
@@ -257,7 +270,8 @@ public class ExpressionEvaluator {
                     return BigDecimal.valueOf(arguments[0].BigDecimal_value.doubleValue() *
                             arguments[1].BigDecimal_value.doubleValue());
                 case 'Y' :
-                    return BigDecimal.valueOf(Math.PI * Math.pow(arguments[0].BigDecimal_value.doubleValue(), 2));
+                    return BigDecimal.valueOf(Math.PI * Math.pow(arguments[0].BigDecimal_value.
+                            doubleValue(), 2));
                 case 'F' :
                     return BigDecimal.valueOf(1.0/2.0 * arguments[0].BigDecimal_value.doubleValue() *
                             arguments[1].BigDecimal_value.doubleValue());
@@ -270,6 +284,24 @@ public class ExpressionEvaluator {
                     return BigDecimal.valueOf(arguments[0].BigDecimal_value.doubleValue() +
                             arguments[1].BigDecimal_value.doubleValue() +
                             arguments[2].BigDecimal_value.doubleValue());
+                case 'N' :
+                    double[] values = new double[arguments.length];
+                    for (int i = 0; i < arguments.length; i++){
+                        values[i] = arguments[i].BigDecimal_value.doubleValue();
+                    }
+                    return BigDecimal.valueOf(HCF(values));
+                case 'n' :
+                    double[] values1 = new double[arguments.length];
+                    for (int i = 0; i < arguments.length; i++){
+                        values1[i] = arguments[i].BigDecimal_value.doubleValue();
+                    }
+                    return BigDecimal.valueOf(LCM(values1));
+                case 'a' :
+                    double[] values2 = new double[arguments.length];
+                    for (int i = 0; i < arguments.length; i++){
+                        values2[i] = arguments[i].BigDecimal_value.doubleValue();
+                    }
+                    return BigDecimal.valueOf(determinant(values2));
             }
             return BigDecimal.ZERO;
         }
@@ -421,9 +453,11 @@ public class ExpressionEvaluator {
 
     //default functions
     public static double factorial(int factor){
-        if (factor > 1)
-            return factor * factorial(factor - 1);
-        else return 1;
+        double number = 1;
+        while (factor != 1){
+            number *= factor--;
+        }
+        return number;
     }
 
     public static double summation(int initialBound, int finalBound, String expression){
@@ -440,6 +474,91 @@ public class ExpressionEvaluator {
                     String.valueOf(variable_char), String.valueOf(i))));
         }
         return exp;
+    }
+
+    public static double HCF(double... values){
+        if (values.length == 1)
+            return values[0];
+        else if (values.length == 0)
+            throw new NullPointerException("input array is empty." +
+                    " provide an input with a valid size");
+        else{
+            double var1 = Math.min(values[0], values[1]);
+            double var2 = Math.max(values[0], values[1]);
+            double remainder = var2 % var1;
+            while (remainder != 0){
+                var2 = var1;
+                var1 = remainder;
+                remainder = var2 % var1;
+            }
+            double[] newValues = new double[values.length - 1];
+            newValues[0] = var1;
+            for (int i = 0; i < values.length; i++){
+                if (i != 0 && i != 1)
+                    newValues[i - 1] = values[i];
+            }
+            return HCF(newValues);
+        }
+    }
+
+    public static double LCM(double... values){
+        int[] newValues = new int[values.length];
+        for (int i = 0; i < values.length; i++){
+            newValues[i] = (int) values[i];
+        }
+        return LCM(2, 1, newValues);
+    }
+
+    private static int LCM(int startingDivisor, int multiplier, int[] values){
+        if (values.length == 0)
+            throw new NullPointerException("empty values array in LCM");
+
+        boolean atLeastOneDividend = false;
+
+        for (int i = 0; i < values.length; i++){
+            if (values[i] != 1){
+                if (values[i] % startingDivisor == 0){
+                    atLeastOneDividend = true;
+                    values[i] = values[i] / startingDivisor;
+                }
+            }
+        }
+
+        if (atLeastOneDividend){
+            multiplier *= startingDivisor;
+            multiplier = LCM(startingDivisor, multiplier, values);
+        }else {
+            boolean numberRemaining = false;
+            for (int value : values){
+                if (value != 1){
+                    numberRemaining = true;
+                    break;
+                }
+            }
+            if (numberRemaining) {
+                switch (startingDivisor) {
+                    case 2:
+                        multiplier = LCM(3, multiplier, values);
+                        break;
+                    case 3:
+                        multiplier = LCM(5, multiplier, values);
+                        break;
+                    case 5:
+                        multiplier = LCM(7, multiplier, values);
+                        break;
+                    default:
+                        int newDivisor = 0;
+                        for (int value : values){
+                            if (value != 1) {
+                                newDivisor = value;
+                                break;
+                            }
+                        }
+                        multiplier = LCM(newDivisor, multiplier, values);
+                }
+            }
+        }
+        return multiplier;
     }
 
     public static BigDecimal getRandom(){
@@ -462,12 +581,149 @@ public class ExpressionEvaluator {
         useDegree = shouldUseDegree;
     }
 
+    public static double[] systemOfEquations(String ListOfEquations){
+        String[] equations = ListOfEquations.split(",");
+
+        double[][] matrixD = new double[equations.length][equations.length];
+        double[] equators = new double[equations.length];
+
+        double determinantD = 0;
+
+        for (int k = 0; k < equations.length; k++){
+            String equation = equations[k].replaceAll("\\s","");
+
+            String[] handSide = equation.split("=");
+
+            String[] terms = handSide[0].split("(?=[-+])");
+
+            for (int i = 0; i < terms.length; i++){
+
+                char c = 0;
+
+                for (int j = 0; j < terms[i].toCharArray().length; j++){
+                    if (Character.isLetter(terms[i].charAt(j))){
+                        c = terms[i].charAt(j);
+                        break;
+                    }
+                }
+                terms[i] = terms[i].replace(String.valueOf(c), "");
+
+                matrixD[k][i] = Double.parseDouble(terms[i]);
+            }
+
+            equators[k] = Double.parseDouble(handSide[1]);
+        }
+
+        determinantD = determinant(matrixD);
+
+        if (determinantD == 0){
+            throw new IllegalStateException("the given system of equations is not linear");
+        }
+
+        double[] finalValues = new double[equations.length];
+
+        int subMatrixVariablePositionCounter = 0;
+
+        for (int i = 0; i < equations.length; i++){
+            double[][] subMatrix = new double[matrixD.length][matrixD.length];
+
+            for (int n = 0; n < subMatrix.length; n++){
+                System.arraycopy(matrixD[n], 0, subMatrix[n], 0, subMatrix[i].length);
+            }
+
+            for (int j = 0; j < subMatrix[i].length; j++){
+                subMatrix[j][subMatrixVariablePositionCounter] = equators[j];
+            }
+
+            finalValues[i] = determinant(subMatrix)/determinantD;
+
+            subMatrixVariablePositionCounter++;
+        }
+        return finalValues;
+    }
+
+    public static double determinant(double... values){
+        double a = Math.sqrt(values.length);
+        if (a - Math.floor(a) != 0)
+            throw new IllegalArgumentException("the length of the matrix must be a perfect square" +
+                    " in order to create a square matrix");
+
+        int a1 = (int)a;
+
+        double[][] matrix = new double[a1][a1];
+
+        int columnCounter = 0;
+        int rowCounter = 0;
+
+        for (double value : values) {
+            matrix[rowCounter][columnCounter] = value;
+            columnCounter++;
+
+            if (columnCounter == a1) {
+                columnCounter = 0;
+                rowCounter++;
+            }
+        }
+
+        return determinant(matrix);
+    }
+
+    private static double determinant(double[][] values){
+        for (double[] value : values) {
+            if (value.length != values.length)
+                throw new IllegalStateException("the given matrix is not in square form");
+        }
+
+        if (values.length == 2){
+            return values[0][0] * values[1][1] - values[1][0] * values[0][1];
+        }
+
+        double finalValue = 0;
+
+        boolean offsetPositions = false;
+
+        for (int i = 0; i < values.length; i++){
+            double coefficient = values[i][0];
+
+            double[][] matrix = new double[values.length - 1][values.length - 1];
+
+            for (int j = 0; j < values.length; j++) {
+                if (j == i) {
+                    offsetPositions = true;
+                    continue;
+                }
+
+                for (int k = 1; k < values.length; k++) {
+                    if (offsetPositions) {
+                        matrix[j - 1][k - 1] = values[j][k];
+                    } else {
+                        matrix[j][k - 1] = values[j][k];
+                    }
+                }
+            }
+
+            coefficient *= determinant(matrix);
+            offsetPositions = false;
+
+            if (i % 2 == 0){
+                finalValue += coefficient;
+            }else {
+                finalValue -= coefficient;
+            }
+        }
+        return finalValue;
+    }
+
     //end of default functions
 
     public static String Evaluate(String expression){
+        if (expression.isEmpty()){
+            throw new NullPointerException("the given string is empty, provide a valid string, " +
+                    "or run a regression test");
+        }
+
         expression = expression.trim();
         expression = expression.replaceAll("\\s+", "");
-        //expression = expression.toUpperCase();
         expression = expression.replaceAll("\\)\\(", "\\)*\\(");
 
         String functionList = "";
@@ -500,9 +756,6 @@ public class ExpressionEvaluator {
                     }else {
                         expression = expression.replaceAll("(?i)" + Pattern.quote(args[0]), args[1]);
                     }
-                    /*if(expression.contains(args[0])){
-                        expression = expression.replaceAll(args[0], args[1]);
-                    }*/
                 }
             }else{
                 String[] args = functionList.split("\\.");
@@ -587,7 +840,7 @@ public class ExpressionEvaluator {
         if(containsFunction)
             expression = Evaluate(expression);
 
-        return evaluate(expression, true);
+        return evaluateOperation(expression, true);
     }
 
     public static String evaluateFunction(String expression){
@@ -607,7 +860,8 @@ public class ExpressionEvaluator {
                         if(op.evaluateSymbol(expression.charAt(i))){
                             whichOperator = op;
                             isInFunction = true;
-                            if(i != 0 && String.valueOf(expression.charAt(i-1)).matches("[1234567890]")){
+                            if(i != 0 && String.valueOf(expression.charAt(i-1)).
+                                    matches("[1234567890]")){
                                 str += '*';
                             }
                             continue outerloop;
@@ -652,6 +906,13 @@ public class ExpressionEvaluator {
                     }
                     for (int j = 0; j < array.length; j++) {
                         assert arguments != null;
+
+                        /*arguments[j] = new operations.argument(
+                                whichOperator.argument_type[j] == operations.ARGUMENT_DOUBLE ?
+                                BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))) : BigDecimal.ZERO,
+                                whichOperator.argument_type[j] == operations.ARGUMENT_STRING ? array[j] : "",
+                                whichOperator.argument_type[j]*//*operations.ARGUMENT_DOUBLE*//*);*/
+
                         if(whichOperator.argumentSize == -1){
                             arguments[j] = new operations.argument(
                                     BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))),
@@ -672,8 +933,8 @@ public class ExpressionEvaluator {
                                         throw new IllegalStateException("the given argument type is illegal");
                                 }
                             }else{
-                                arguments[j] = new operations.argument(BigDecimal.valueOf(
-                                        Double.parseDouble(Evaluate(array[j]))),
+                                arguments[j] = new operations.argument(
+                                        BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))),
                                         "", operations.ARGUMENT_DOUBLE);
                             }
                         }
@@ -689,7 +950,7 @@ public class ExpressionEvaluator {
         return str;
     }
 
-    public static String evaluate(String expression, boolean includeSimpleFunction){
+    public static String evaluateOperation(String expression, boolean includeSimpleFunction){
         Stack<BigDecimal> operand = new Stack<>(2);
         Stack<operations> operator = new Stack<>(1);
         stepData step_data = new stepData();
@@ -796,7 +1057,8 @@ public class ExpressionEvaluator {
                         if(op.evaluateSymbol(expression.charAt(i))){
                             if(step_data.isOperator){
                                 if (expression.charAt(i) != '-' && expression.charAt(i) != '+')
-                                    throw new IllegalStateException("the second conflicting symbol is illegal");
+                                    throw new IllegalStateException
+                                            ("the second conflicting symbol is illegal");
                                 else{
                                     operatorFound = false;
                                 }
@@ -830,7 +1092,7 @@ public class ExpressionEvaluator {
                             if (expression.charAt(i) == ')'){
                                 if (bracketCounter == 0){
                                     isInBracket = false;
-                                    step_data.setStepData(evaluate(subExpression, true));
+                                    step_data.setStepData(evaluateOperation(subExpression, true));
                                     subExpression = "";
                                 }else
                                     bracketCounter--;
@@ -937,7 +1199,7 @@ public class ExpressionEvaluator {
             }
         }
         if (containsComplexFunctions){
-            builder = evaluate(builder, false);
+            builder = evaluateOperation(builder, false);
         }
 
         if (includeSimpleFunction){
@@ -989,7 +1251,6 @@ public class ExpressionEvaluator {
 
     private static BigDecimal simpleSolver(String expression, Stack<BigDecimal> operand,
                                            Stack<operations> operator, stepData step_data){
-
         for(int i = 0; i < expression.length(); i++){
             if (i == 0){
                 for (operations op : operations.values()){
@@ -1048,7 +1309,7 @@ public class ExpressionEvaluator {
     private static operations symbolConflict(char c1, char c2){
         if((c1 == '+' && c2 == '+') || (c1 == '-' && c2 == '-'))
             return operations.ADD;
-        else if((c1 == '+' && c2 == '-') || (c2 == '-' && c2 == '+'))
+        else if((c1 == '+' && c2 == '-') || (c1 == '-' && c2 == '+'))
             return operations.SUBTRACT;
         throw new IllegalStateException("this condition isn't supposed to happen");
     }
@@ -1093,7 +1354,7 @@ public class ExpressionEvaluator {
         private final int size;
 
         public Stack(int size){
-            e = (E[])new Object[size];
+            e = new Object[size];
             positionCounter = new int[size];
 
             this.size = size;
@@ -1130,7 +1391,6 @@ public class ExpressionEvaluator {
             return (E) e[index];
         }
 
-        @SuppressWarnings("unchecked")
         public E pullFirst(){
             return pull(0);
         }
