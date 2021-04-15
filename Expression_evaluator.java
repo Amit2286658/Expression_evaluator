@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * UPDATE : I am making an android calculator based on this Algorithm.
  * :)
 */
-public class ExpressionEvaluator {
+public class Main {
 
     private static Scanner scan = new Scanner(System.in);
 
@@ -101,12 +101,12 @@ public class ExpressionEvaluator {
         COSECANT_HYPERBOLA_INVERSE('r', 4, TYPE.POST, "acsch"),
         COTANGENT_HYPERBOLA_INVERSE('u', 4, TYPE.POST, "acoth"),
         EE('G', 5, "E", true),
-        RAND('D', 6, TYPE.CONSTANT, "rand"),
-        e('e', 6, TYPE.CONSTANT, true),
-        PI('π', 6, TYPE.CONSTANT),
+        RAND('D', 6, TYPE.CONSTANT, "random"),
+        e('e', 6, TYPE.CONSTANT, "euler", true),
+        PI('π', 6, TYPE.CONSTANT, "pi"),
         MODULUS('%', 3),
         FACTORIAL('!', 5, TYPE.PRE),
-        HYPOTENUSE('H', TYPE.FUNCTION, "hypot", 2, new int[]{
+        HYPOTENUSE('H', TYPE.FUNCTION, "Hypotenuse", 2, new int[]{
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE
         }),
@@ -116,7 +116,7 @@ public class ExpressionEvaluator {
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_STRING
         }),
-        ADD_ALL('A', TYPE.FUNCTION, "add"),
+        ADD_ALL('A', TYPE.FUNCTION, "Add"),
         LOG_10('W', 5, TYPE.POST, "log10"),
         LOG_E('L', 5, TYPE.POST, "ln"),
         LOG_D('V', 5, "log"),
@@ -988,26 +988,33 @@ public class ExpressionEvaluator {
             }
             switch (operator_type) {
                 case POST:
-                    if (i != 0 && expression.charAt(i - 1) != '(')
-                        higherBuilder += "*";
+                    if (i != 0 && expression.charAt(i - 1) != '('){
+                        if (String.valueOf(expression.charAt(i - 1)).matches("[1234567890]"))
+                            higherBuilder += "*";
+                    }
                     higherBuilder += op1.neutral_value;
                     higherBuilder += op1.operator;
                     break;
                 case PRE:
                     higherBuilder += op1.operator;
                     higherBuilder += op1.neutral_value;
-                    if (i != expression.length() - 1 && expression.charAt(i + 1) != ')')
-                        higherBuilder += "*";
+
+                    if (i != expression.length() - 1 && expression.charAt(i + 1) != ')') {
+                        if (String.valueOf(expression.charAt(i + 1)).matches("[1234567890]"))
+                            higherBuilder += "*";
+                    }
                     break;
                 case CONSTANT:
-                    if (i != 0 && String.valueOf(expression.charAt(i-1)).matches("[1234567890]"))
+                    if (i != 0 && String.valueOf(expression.charAt(i-1)).matches("[1234567890]")) {
                         higherBuilder += '*';
+                    }
                     higherBuilder += op1.neutral_value;
                     higherBuilder += op1.operator;
                     higherBuilder += op1.neutral_value;
                     if (i != expression.length() - 1 && String.valueOf(expression.charAt(i+1)).
-                            matches("[1234567890]"))
+                            matches("[1234567890]")) {
                         higherBuilder += '*';
+                    }
                     break;
                 default:
                     higherBuilder += expression.charAt(i);
@@ -1056,9 +1063,10 @@ public class ExpressionEvaluator {
                     for(operations op : operations.values()){
                         if(op.evaluateSymbol(expression.charAt(i))){
                             if(step_data.isOperator){
-                                if (expression.charAt(i) != '-' && expression.charAt(i) != '+')
+                                if (expression.charAt(i) != '-' && expression.charAt(i) != '+') {
                                     throw new IllegalStateException
                                             ("the second conflicting symbol is illegal");
+                                }
                                 else{
                                     operatorFound = false;
                                 }
@@ -1434,4 +1442,3 @@ public class ExpressionEvaluator {
         }
     }
 }
-
