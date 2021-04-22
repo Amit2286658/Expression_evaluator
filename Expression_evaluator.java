@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * execution on sololearn can take upto 30 ms more,
  * compared to execution on local machines.
  */
-public class Main {
+public class ExpressionEvaluator {
 
     private static Scanner scan = new Scanner(System.in);
 
