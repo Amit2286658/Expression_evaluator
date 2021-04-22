@@ -7,11 +7,6 @@ import java.util.regex.Pattern;
  * execution on sololearn can take upto 30 ms more,
  * compared to execution on local machines.
  */
-
-/*
- * UPDATE : I am making an android calculator based on this Algorithm.
- * :)
-*/
 public class Main {
 
     private static Scanner scan = new Scanner(System.in);
@@ -75,7 +70,7 @@ public class Main {
         SUBTRACT('-', 1),
         MULTIPLY('*', 2, "x"),
         DIVIDE('/', 2, "÷"),
-        EXPONENT('^', 3),
+        EXPONENT('^', 1),
         SINE('S', 4, TYPE.POST, "sin"),
         COSINE('C', 4, TYPE.POST, "cos"),
         TANGENT('T', 4, TYPE.POST, "tan"),
@@ -110,7 +105,7 @@ public class Main {
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE
         }),
-        ROOT('√', 5),
+        ROOT('√', 5, 2, TYPE.POST),
         SUMMATION('B', TYPE.FUNCTION, "sum", 3, new int[]{
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE,
@@ -131,6 +126,7 @@ public class Main {
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE
         }),
+        AREA_OF_TRIANGLE_HERONS_FORMULA('b', TYPE.FUNCTION, "area[Δ]1", 4),
         PERIMETER_OF_RECT('z', TYPE.FUNCTION, "peri[□]", 2, new int[]{
                 operations.ARGUMENT_DOUBLE,
                 operations.ARGUMENT_DOUBLE
@@ -248,7 +244,7 @@ public class Main {
 
         /*
         * this function will be called when the type is TYPE.FUNCTION,
-          it returns all the values seperated by comma inside the parentheses,
+          it gives all the values seperated by comma inside the parentheses,
           parentheses is important to encapsulate the arguments of the function.
         */
         public BigDecimal function(argument[] arguments){
@@ -302,6 +298,8 @@ public class Main {
                         values2[i] = arguments[i].BigDecimal_value.doubleValue();
                     }
                     return BigDecimal.valueOf(determinant(values2));
+                case 'b' :
+                    return BigDecimal.valueOf(1);
             }
             return BigDecimal.ZERO;
         }
@@ -317,7 +315,13 @@ public class Main {
 
         public final char operator;
         public final int precedence;
-        public final int neutral_value = 1;
+        public int neutral_value = 1;
+
+        public TYPE volatile_type = null;
+        public boolean isVolatile = false;
+
+        public int function_identity = 1;
+
         public TYPE operator_type = operations.TYPE.NONE;
         public String functionName = null;
         public int argumentSize = -1;
@@ -329,6 +333,13 @@ public class Main {
         operations(char operator, int precedence){
             this.operator = operator;
             this.precedence= precedence;
+        }
+
+        operations(char operator, int precedence, int neutral_value, TYPE volatile_type){
+            this(operator, precedence);
+            this.neutral_value = neutral_value;
+            this.isVolatile = true;
+            this.volatile_type = volatile_type;
         }
 
         operations(char operator, int precedence, TYPE type, boolean strictCase){
@@ -344,26 +355,29 @@ public class Main {
 
         operations(char operator, int precedence, TYPE type, String functionName, boolean strictCase){
             this(operator, precedence, type, strictCase);
-            //functionName = functionName.toUpperCase();
             this.functionName = functionName;
         }
 
         operations(char operator, int precedence, TYPE type, String functionName){
             this(operator, precedence, type, false);
-            //functionName = functionName.toUpperCase();
             this.functionName = functionName;
         }
 
         operations(char operator, int precedence, String functionName, boolean strictCase){
             this(operator, precedence, TYPE.NONE, strictCase);
-            //functionName = functionName.toUpperCase();
             this.functionName = functionName;
         }
 
         operations(char operator, int precedence, String functionName){
             this(operator, precedence, TYPE.NONE, false);
-            //functionName = functionName.toUpperCase();
             this.functionName = functionName;
+        }
+
+        operations(char operator, int precedence, String functionName, int neutral_value, TYPE volatile_type){
+            this(operator, precedence, functionName);
+            this.neutral_value = neutral_value;
+            this.isVolatile = true;
+            this.volatile_type = volatile_type;
         }
 
         operations(char operator, TYPE type, String functionName, boolean strictCase){
@@ -840,6 +854,141 @@ public class Main {
         if(containsFunction)
             expression = Evaluate(expression);
 
+        /*the codes below does extensive bracket insertion, the code is repetitive, and most of the work could be done
+        * in one or two loops, however, it will be a mess to combine all this logic, therefore I'm doing bracket insertion
+        * for each different case separately to retain my sanity.*/
+
+        boolean lastCharOperator = false, numFound = false;
+        int bracketCounter = 0;
+        String tempSubExpression = "";
+        for (int i = 0; i < expression.length(); i++){
+            for (operations op : operations.values()){
+                if (op.evaluateSymbol(expression.charAt(i))){
+                    if ((op.isVolatile && op.volatile_type == operations.TYPE.POST) ||
+                    op.operator_type == operations.TYPE.POST){
+                        if (!lastCharOperator){
+                            lastCharOperator = true;
+                        } else{
+                            tempSubExpression += "(";
+                            bracketCounter++;
+                        }
+                    } else {
+                        if (numFound){
+                            while (bracketCounter > 0){
+                                tempSubExpression += ")";
+                                bracketCounter--;
+                            }
+                            numFound = false;
+                        }
+                    }
+                }
+            }
+            boolean matches = String.valueOf(expression.charAt(i)).matches("[1234567890]");
+
+            if (matches){
+                if (lastCharOperator)
+                    lastCharOperator = false;
+                numFound = true;
+            }
+            tempSubExpression += expression.charAt(i);
+
+            if (bracketCounter != 0 && i == expression.length() - 1){
+                for (int k = 0; k < bracketCounter; k++){
+                    tempSubExpression += ")";
+                }
+            }
+        }
+        expression = tempSubExpression;
+
+        tempSubExpression = "";
+        lastCharOperator = false;
+        numFound = false;
+        bracketCounter = 0;
+
+        for (int i = expression.length() - 1; i >= 0; i--){
+            for (operations op : operations.values()){
+                //3√√64--5+3!!/2
+                if (op.evaluateSymbol(expression.charAt(i))){
+                    if ((op.isVolatile && op.volatile_type == operations.TYPE.PRE) ||
+                    op.operator_type == operations.TYPE.PRE) {
+                        if (!lastCharOperator){
+                            lastCharOperator = true;
+                        } else{
+                            tempSubExpression += ")";
+                            bracketCounter++;
+                        }
+                    } else {
+                        if (numFound){
+                            while (bracketCounter > 0){
+                                tempSubExpression += "(";
+                                bracketCounter--;
+                            }
+                            numFound = false;
+                        }
+                    }
+                }
+            }
+            boolean matches = String.valueOf(expression.charAt(i)).matches("[1234567890]");
+
+            if (matches){
+                if (lastCharOperator)
+                    lastCharOperator = false;
+                numFound = true;
+            }
+            tempSubExpression += expression.charAt(i);
+
+            if (bracketCounter != 0 && i == 0){
+                for (int k = 0; k < bracketCounter; k++){
+                    tempSubExpression += "(";
+                }
+            }
+        }
+
+        String reverseTempSubString = "";
+        for (int i = tempSubExpression.length() - 1; i >= 0; i--){
+            reverseTempSubString += tempSubExpression.charAt(i);
+        }
+
+        expression = reverseTempSubString;
+
+        tempSubExpression = "";
+        lastCharOperator = false;
+        bracketCounter = 0;
+
+        for (int i = 0; i < expression.length(); i++){
+            for (operations op : operations.values()){
+                if (op.evaluateSymbol(expression.charAt(i))){
+                    if (op == operations.ADD || op == operations.SUBTRACT){
+                        if (!lastCharOperator)
+                            lastCharOperator = true;
+                        else {
+                            tempSubExpression += "(";
+                            bracketCounter++;
+                        }
+                    }else {
+                        if (lastCharOperator)
+                            lastCharOperator = false;
+                    }
+                }
+            }
+            boolean match = String.valueOf(expression.charAt(i)).matches("[1234567890]");
+
+            if (match){
+                if (lastCharOperator)
+                    lastCharOperator = false;
+            }
+
+            tempSubExpression += expression.charAt(i);
+
+            if (bracketCounter != 0 && i == expression.length() - 1){
+                while (bracketCounter > 0){
+                    tempSubExpression += ")";
+                    bracketCounter--;
+                }
+            }
+        }
+        expression = tempSubExpression;
+
         return evaluateOperation(expression, true);
     }
 
@@ -895,8 +1044,7 @@ public class Main {
                             break;
                     }
                 }
-                if(isInFunction && !isInBracket){
-                    assert whichOperator != null;
+                if(!isInBracket){
                     String[] array = subString.split(",");
                     operations.argument[] arguments = new operations.argument[array.length];
                     if(whichOperator.argumentSize != -1 &&
@@ -905,13 +1053,6 @@ public class Main {
                                 + " not match the required length of the argument");
                     }
                     for (int j = 0; j < array.length; j++) {
-                        assert arguments != null;
-
-                        /*arguments[j] = new operations.argument(
-                                whichOperator.argument_type[j] == operations.ARGUMENT_DOUBLE ?
-                                BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))) : BigDecimal.ZERO,
-                                whichOperator.argument_type[j] == operations.ARGUMENT_STRING ? array[j] : "",
-                                whichOperator.argument_type[j]*//*operations.ARGUMENT_DOUBLE*//*);*/
 
                         if(whichOperator.argumentSize == -1){
                             arguments[j] = new operations.argument(
@@ -968,25 +1109,53 @@ public class Main {
             operations.TYPE operator_type = operations.TYPE.NONE;
             for(operations op : operations.values()){
                 if(op.operator_type == operations.TYPE.POST){
-                    if(op.evaluateSymbol(expression.charAt(i)) && (i == 0 || expression.charAt(i-1) != '1')){
+                    if(op.evaluateSymbol(expression.charAt(i))){
                         op1 = op;
                         operator_type = operations.TYPE.POST;
                     }
                 }else if(op.operator_type == operations.TYPE.PRE){
-                    if(op.evaluateSymbol(expression.charAt(i)) && (i == expression.length()-1 ||
-                            expression.charAt(i + 1) != '1')){
+                    if(op.evaluateSymbol(expression.charAt(i))){
                         op1 = op;
                         operator_type = operations.TYPE.PRE;
                     }
                 }else if(op.operator_type == operations.TYPE.CONSTANT){
-                    if(op.evaluateSymbol(expression.charAt(i)) && (i == 0 || expression.charAt(i-1) != '1') &&
-                            (i == expression.length()-1 || expression.charAt(i + 1) != '1')){
+                    if(op.evaluateSymbol(expression.charAt(i))){
                         op1 = op;
                         operator_type = operations.TYPE.CONSTANT;
                     }
+                }else if (op.operator_type == operations.TYPE.NONE){
+                    if (op.evaluateSymbol(expression.charAt(i))) {
+                        op1 = op;
+                        operator_type = operations.TYPE.NONE;
+                    }
                 }
             }
+
             switch (operator_type) {
+                case NONE:
+                    if (op1 != null && op1.isVolatile){
+                        if (op1.volatile_type == operations.TYPE.POST) {
+                            if (i != 0 && expression.charAt(i - 1) != '(') {
+                                if (!String.valueOf(expression.charAt(i - 1)).matches("[1234567890]")) {
+                                    higherBuilder += op1.neutral_value;
+                                }
+                            } else {
+                                higherBuilder += op1.neutral_value;
+                            }
+                            higherBuilder += op1.operator;
+                        }else if (op1.volatile_type == operations.TYPE.PRE){
+                            higherBuilder += op1.operator;
+                            if (i != expression.length() - 1 && expression.charAt(i + 1) != ')') {
+                                if (!String.valueOf(expression.charAt(i + 1)).matches("[1234567890]")){
+                                    higherBuilder += op1.neutral_value;
+                                }
+                            } else {
+                                higherBuilder += op1.neutral_value;
+                            }
+                        }
+                    }else
+                        higherBuilder += expression.charAt(i);
+                    break;
                 case POST:
                     if (i != 0 && expression.charAt(i - 1) != '('){
                         if (String.valueOf(expression.charAt(i - 1)).matches("[1234567890]"))
@@ -1022,6 +1191,8 @@ public class Main {
             }
         }
 
+
+
         if((expression.length() > 1) && (expression.charAt(1) == '(' &&
                 (expression.charAt(0) == '-' || expression.charAt(0) == '+'))){
             char[] newBuilder = new char[higherBuilder.length()+1];
@@ -1040,7 +1211,6 @@ public class Main {
         }
 
         expression = higherBuilder;
-
         for(int i = 0; i < expression.length(); i++){
             if (i == expression.length() - 1){
                 for (operations op : operations.values()){
@@ -1059,13 +1229,14 @@ public class Main {
             }else {
                 boolean operatorFound = false;
                 operations whichOperator = null;
+
                 if(!isInBracket){
                     for(operations op : operations.values()){
                         if(op.evaluateSymbol(expression.charAt(i))){
                             if(step_data.isOperator){
                                 if (expression.charAt(i) != '-' && expression.charAt(i) != '+') {
                                     throw new IllegalStateException
-                                            ("the second conflicting symbol is illegal");
+                                            ("the second symbol is conflicting");
                                 }
                                 else{
                                     operatorFound = false;
@@ -1120,12 +1291,9 @@ public class Main {
                     BigDecimal value = BigDecimal.valueOf(Double.parseDouble(step_data.currentOperand));
                     operand.push(value);
 
-                    if(operator.pullFirst() == null){
-                        operator.push(whichOperator);
-                        step_data.setStepData(whichOperator);
-                    }else {
-                        if(operations.ADD.evaluateSymbol(operator.pullFirst().operator) ||
-                                operations.SUBTRACT.evaluateSymbol(operator.pullFirst().operator)){
+                    if (operator.pullFirst() != null) {
+                        if (operations.ADD.evaluateSymbol(operator.pullFirst().operator) ||
+                                operations.SUBTRACT.evaluateSymbol(operator.pullFirst().operator)) {
                             builder += operand.pullFirst();
                             builder += operator.pullFirst().operator;
 
@@ -1142,25 +1310,23 @@ public class Main {
                         assert whichOperator != null;
                         int precedence2 = whichOperator.precedence;
 
-                        if (precedence2 > precedence1){
+                        if (precedence2 > precedence1) {
                             builder += operand.pullFirst();
                             builder += operator.pullFirst().operator;
                             operand.popFirst();
                             operator.popFirst();
 
-                            operator.push(whichOperator);
-                            step_data.setStepData(whichOperator);
-                        }else {
+                        } else {
                             BigDecimal operatedValue = operator.pullFirst().function(operand.pull(0),
                                     operand.pull(1));
                             operand.popAll();
                             operand.push(operatedValue);
                             operator.popAll();
-                            operator.push(whichOperator);
 
-                            step_data.setStepData(whichOperator);
                         }
                     }
+                    operator.push(whichOperator);
+                    step_data.setStepData(whichOperator);
                 }
             }
         }
