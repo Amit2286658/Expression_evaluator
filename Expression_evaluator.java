@@ -1,4 +1,3 @@
-import java.math.BigDecimal;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -7,7 +6,9 @@ import java.util.regex.Pattern;
  * execution on sololearn can take upto 30 ms more,
  * compared to execution on local machines.
  */
-public class ExpressionEvaluator {
+
+
+public class Main {
 
     private static Scanner scan = new Scanner(System.in);
 
@@ -25,6 +26,29 @@ public class ExpressionEvaluator {
         System.out.println("Time taken for execution : "+(endTime-startTime)/1000000+" ms");
     }
 
+    /*
+    * function overloading is now supported,
+    * overloaded functions uses the same operator, same name (look at the area of triangle function for example)
+    * the difference comes in the type and amount of parameters they accept.
+
+    * theoretically I don't understand how did it work, it just worked.
+    * but on a side note, it works as predicted, i just don't understand my own codes anymore but whatever.*/
+
+    /*volatile types are also supported,
+    * so you may be wondering what the hell is a volatile type anyways?
+    * well it's just the ability to change the type of the operator to something else on the fly,
+    * just kidding, not exactly on the fly, since there are no ways to communicate with operators on the fly.
+    * volatile types are predetermined and kind of expected types.
+
+    * for example, the root operator works on both operands like this 2√4, 3√27, 4√256, etc,
+      however there is a case where the left operand might be missing like this √4 or √9 or √16 etc,
+      it's clear, we need default values in such cases and this is where the volatile types come in handy,
+      we know it beforehand that in such cases the type will turn into a post type, therefore we can define
+      2 as the default value(as one could guess, it indeed requires a default value, otherwise 1 will be used),
+      and when such cases are encountered where one operand is missing, volatile types will come for rescue,
+      and will automatically insert the default values in the place of the missing operand.
+    */
+
     enum operations{
         // Updated it entirely, a new type, TYPE.CONSTANT is now supported, along with a whole suit of
         // trigonometric and hyperbolic functions, including inverse functions.
@@ -32,7 +56,7 @@ public class ExpressionEvaluator {
         // inside a bracket is solved now, try asin(sin(90)){is in degree} for example
         // or any other expression to test.
 
-        /* EXISTING CHARACTER OPERATORS : S, C, T, I, O, P, J, K, M, Q, R, U, s, c, t, i, o, p, j, k,
+        /* EXISTING CHARACTER OPERATORS : S, C, T, I, O, P, J, K, M, Q, R, U, s, c, t, g, o, p, j, k,
          m, q, r, u, H, A, W, L, V, B, X, G, D, Z, Y, F, z, y, f, e, N, n, a.
 
         RESERVED CHARACTERS : E.
@@ -86,7 +110,7 @@ public class ExpressionEvaluator {
         SINE_INVERSE('s', 4, TYPE.POST, "asin"),
         COSINE_INVERSE('c', 4, TYPE.POST, "acos"),
         TANGENT_INVERSE('t', 4, TYPE.POST, "atan"),
-        SECANT_INVERSE('i', 4, TYPE.POST, "asec"),
+        SECANT_INVERSE('g', 4, TYPE.POST, "asec"),
         COSECANT_INVERSE('o', 4, TYPE.POST, "acsc"),
         COTANGENT_INVERSE('p', 4, TYPE.POST, "acot"),
         SINE_HYPERBOLA_INVERSE('j', 4, TYPE.POST, "asinh"),
@@ -101,10 +125,7 @@ public class ExpressionEvaluator {
         PI('π', 6, TYPE.CONSTANT, "pi"),
         MODULUS('%', 3),
         FACTORIAL('!', 5, TYPE.PRE),
-        HYPOTENUSE('H', TYPE.FUNCTION, "Hypotenuse", 2, new int[]{
-                operations.ARGUMENT_DOUBLE,
-                operations.ARGUMENT_DOUBLE
-        }),
+        HYPOTENUSE('H', TYPE.FUNCTION, "Hypotenuse", 2),
         ROOT('√', 5, 2, TYPE.POST),
         SUMMATION('B', TYPE.FUNCTION, "sum", 3, new int[]{
                 operations.ARGUMENT_DOUBLE,
@@ -115,30 +136,13 @@ public class ExpressionEvaluator {
         LOG_10('W', 5, TYPE.POST, "log10"),
         LOG_E('L', 5, TYPE.POST, "ln"),
         LOG_D('V', 5, "log"),
-        AREA_OF_RECT('Z', TYPE.FUNCTION, "area[□]", 2, new int[]{
-                operations.ARGUMENT_DOUBLE,
-                operations.ARGUMENT_DOUBLE
-        }),
-        AREA_OF_CIRCLE('Y', TYPE.FUNCTION, "area[○]", 1, new int[]{
-                operations.ARGUMENT_DOUBLE
-        }),
-        AREA_OF_TRIANGLE('F', TYPE.FUNCTION, "area[Δ]", 2, new int[]{
-                operations.ARGUMENT_DOUBLE,
-                operations.ARGUMENT_DOUBLE
-        }),
-        AREA_OF_TRIANGLE_HERONS_FORMULA('b', TYPE.FUNCTION, "area[Δ]1", 4),
-        PERIMETER_OF_RECT('z', TYPE.FUNCTION, "peri[□]", 2, new int[]{
-                operations.ARGUMENT_DOUBLE,
-                operations.ARGUMENT_DOUBLE
-        }),
-        PERIMETER_OF_CIRCLE('y', TYPE.FUNCTION, "peri[○]", 1, new int[]{
-            operations.ARGUMENT_DOUBLE
-        }),
-        PERIMETER_OF_TRIANGLE('f', TYPE.FUNCTION, "peri[Δ]", 3, new int[]{
-                operations.ARGUMENT_DOUBLE,
-                operations.ARGUMENT_DOUBLE,
-                operations.ARGUMENT_DOUBLE
-        }),
+        AREA_OF_RECT('Z', TYPE.FUNCTION, "area[□]", 2),
+        AREA_OF_CIRCLE('Y', TYPE.FUNCTION, "area[○]", 1),
+        AREA_OF_TRIANGLE('F', TYPE.FUNCTION, "area[Δ]", 2, 1),
+        HERONS_FORMULA('F', TYPE.FUNCTION, "area[Δ]", 3, 2),
+        PERIMETER_OF_RECT('z', TYPE.FUNCTION, "peri[□]", 2),
+        PERIMETER_OF_CIRCLE('y', TYPE.FUNCTION, "peri[○]", 1),
+        PERIMETER_OF_TRIANGLE('f', TYPE.FUNCTION, "peri[Δ]", 3),
         HCF('N', TYPE.FUNCTION, "HCF"),
         LCM('n', TYPE.FUNCTION, "LCM"),
         DETERMINANT('a', TYPE.FUNCTION, "Determinant");
@@ -152,156 +156,169 @@ public class ExpressionEvaluator {
           work on 30 which is after the operator, therefore post operator.
           in factorial like 5!, the factorial works on 5 which is before the operator, therefore
           pre operator.*/
-        public BigDecimal function(BigDecimal d1, BigDecimal d2){
+        public double function(double d1, double d2){
             switch(operator){
                 case '+' :
-                    return d1.add(d2);
+                    return d1 + d2;
                 case '-' :
-                    return d1.subtract(d2);
+                    return d1 - d2;
                 case '*' :
-                    return d1.multiply(d2);
+                    return d1 * d2;
                 case '/' :
-                    return BigDecimal.valueOf(d1.doubleValue()/d2.doubleValue());
+                    return d1 / d2;
                 case '^' :
-                    return BigDecimal.valueOf(Math.pow(d1.doubleValue(), d2.doubleValue()));
+                    return Math.pow(d1, d2);
                 case 'S' :
-                    return BigDecimal.valueOf(Math.sin(getAngle(d2.doubleValue(), false)));
+                    return Math.sin(getAngle(d2, false));
                 case 'C' :
-                    return BigDecimal.valueOf(Math.cos(getAngle(d2.doubleValue(), false)));
+                    return Math.cos(getAngle(d2, false));
                 case 'T' :
-                    return BigDecimal.valueOf(Math.tan(getAngle(d2.doubleValue(), false)));
+                    return Math.tan(getAngle(d2, false));
                 case '!' :
-                    return BigDecimal.valueOf(factorial(d1.intValue()));
+                    return factorial((int)d1);
                 case '√' :
-                    return BigDecimal.valueOf(Math.pow(d2.doubleValue(), 1/d1.doubleValue()));
+                    if (d2 < 0 && d1 % 2 != 0)
+                        return Math.pow(Math.abs(d2), 1/d1) * -1;
+                    return Math.pow(d2, 1/d1);
                 case '%' :
-                    return BigDecimal.valueOf(d1.doubleValue() % d2.doubleValue());
+                    return d1 % d2;
                 case 'V' :
-                    return BigDecimal.valueOf(Math.log(d2.doubleValue())/Math.log(d1.doubleValue()));
+                    return Math.log(d2)/Math.log(d1);
                 case 'W' :
-                    return BigDecimal.valueOf(Math.log10(d2.doubleValue()));
+                    return Math.log10(d2);
                 case 'L' :
-                    return BigDecimal.valueOf(Math.log(d2.doubleValue()));
+                    return Math.log(d2);
                 case 'I' :
-                    return BigDecimal.valueOf(1/Math.cos(getAngle(d2.doubleValue(), false)));
+                    return 1/Math.cos(getAngle(d2, false));
                 case 'O' :
-                    return BigDecimal.valueOf(1/Math.sin(getAngle(d2.doubleValue(), false)));
+                    return 1/Math.sin(getAngle(d2, false));
                 case 'P' :
-                    return BigDecimal.valueOf(1/Math.tan(getAngle(d2.doubleValue(), false)));
+                    return 1/Math.tan(getAngle(d2, false));
                 case 'J' :
-                    return BigDecimal.valueOf(Math.sinh(d2.doubleValue()));
+                    return Math.sinh(d2);
                 case 'K' :
-                    return BigDecimal.valueOf(Math.cosh(d2.doubleValue()));
+                    return Math.cosh(d2);
                 case 'M' :
-                    return BigDecimal.valueOf(Math.tanh(d2.doubleValue()));
+                    return Math.tanh(d2);
                 case 'Q' :
-                    return BigDecimal.valueOf(1/Math.cosh(d2.doubleValue()));
+                    return 1/Math.cosh(d2);
                 case 'R' :
-                    return BigDecimal.valueOf(1/Math.sinh(d2.doubleValue()));
+                    return 1/Math.sinh(d2);
                 case 'U' :
-                    return BigDecimal.valueOf(1/Math.tanh(d2.doubleValue()));
+                    return 1/Math.tanh(d2);
                 case 's' :
-                    return BigDecimal.valueOf(getAngle(Math.asin(d2.doubleValue()), true));
+                    return getAngle(Math.asin(d2), true);
                 case 'c' :
-                    return BigDecimal.valueOf(getAngle(Math.acos(d2.doubleValue()), true));
+                    return getAngle(Math.acos(d2), true);
                 case 't' :
-                    return BigDecimal.valueOf(getAngle(Math.atan(d2.doubleValue()), true));
+                    return getAngle(Math.atan(d2), true);
                 case 'i' :
-                    return BigDecimal.valueOf(getAngle(Math.acos(1/d2.doubleValue()), true));
+                    return getAngle(Math.acos(1/d2), true);
                 case 'o' :
-                    return BigDecimal.valueOf(getAngle(Math.asin(1/d2.doubleValue()), true));
+                    return getAngle(Math.asin(1/d2), true);
                 case 'p' :
-                    return BigDecimal.valueOf(getAngle(Math.atan(1/d2.doubleValue()), true));
+                    return getAngle(Math.atan(1/d2), true);
                 case 'j' :
-                    return BigDecimal.valueOf(Math.log(d2.doubleValue() +
-                            Math.sqrt(Math.pow(d2.doubleValue(), 2) + 1)));
+                    return Math.log(d2 +
+                            Math.sqrt(Math.pow(d2, 2) + 1));
                 case 'k' :
-                    return BigDecimal.valueOf(Math.log(d2.doubleValue() +
-                            Math.sqrt(Math.pow(d2.doubleValue(), 2) - 1)));
+                    return Math.log(d2 +
+                            Math.sqrt(Math.pow(d2, 2) - 1));
                 case 'm' :
-                    return BigDecimal.valueOf((1.0/2.0)*Math.log((1 + d2.doubleValue())/
-                            (1 - d2.doubleValue())));
+                    return (1.0/2.0)*Math.log((1 + d2)/
+                            (1 - d2));
                 case 'q' :
-                    return BigDecimal.valueOf(Math.log((1 + Math.sqrt(1 - Math.pow(d2.doubleValue(), 2)))/
-                            d2.doubleValue()));
+                    return Math.log((1 + Math.sqrt(1 - Math.pow(d2, 2)))/
+                            d2);
                 case 'r' :
-                    return BigDecimal.valueOf(Math.log((1/d2.doubleValue()) +
-                            ((Math.sqrt(1 + Math.pow(d2.doubleValue(), 2)))/Math.abs(d2.doubleValue()))));
+                    return Math.log((1/d2) +
+                            ((Math.sqrt(1 + Math.pow(d2, 2)))/Math.abs(d2)));
                 case 'u' :
-                    return BigDecimal.valueOf((1.0/2.0)*Math.log((d2.doubleValue() + 1) /
-                            (d2.doubleValue() - 1)));
+                    return (1.0/2.0)*Math.log((d2 + 1) /
+                            (d2 - 1));
                 case 'G' :
-                    return BigDecimal.valueOf(d1.doubleValue() * Math.pow(10, d2.doubleValue()));
+                    return d1 * Math.pow(10, d2);
                 case 'D' :
                     return getRandom();
                 case 'π' :
-                    return BigDecimal.valueOf(Math.PI);
+                    return Math.PI;
                 case 'e' :
-                    return BigDecimal.valueOf(Math.E);
+                    return (Math.E);
             }
-            return BigDecimal.ZERO;
+            return 0;
         }
 
         /*
         * this function will be called when the type is TYPE.FUNCTION,
           it gives all the values seperated by comma inside the parentheses,
           parentheses is important to encapsulate the arguments of the function.
+
+        * identity is the id of the functions, ignore if there are no overloads.
         */
-        public BigDecimal function(argument[] arguments){
+        public double function(argument[] arguments, int identity){
             switch(operator){
                 case 'H' :
-                    return BigDecimal.valueOf(Math.sqrt(Math.pow(arguments[0].BigDecimal_value.
-                            doubleValue(), 2) + Math.pow(arguments[1].BigDecimal_value.doubleValue(), 2)));
+                    return Math.sqrt(Math.pow(arguments[0].double_value, 2) + Math.pow(arguments[1].double_value, 2));
                 case 'B' :
-                    return BigDecimal.valueOf(summation(arguments[0].BigDecimal_value.intValue(),
-                            arguments[1].BigDecimal_value.intValue(),
-                            arguments[2].string_value));
+                    return summation((int)arguments[0].double_value,
+                            (int)arguments[1].double_value,
+                            arguments[2].string_value);
                 case 'A' :
-                    BigDecimal d = BigDecimal.valueOf(0);
+                    double d = 0;
                     for(argument ar : arguments){
-                        d = d.add(ar.BigDecimal_value);
+                        d = d + ar.double_value;
                     }
                     return d;
                 case 'Z' :
-                    return BigDecimal.valueOf(arguments[0].BigDecimal_value.doubleValue() *
-                            arguments[1].BigDecimal_value.doubleValue());
+                    return arguments[0].double_value *
+                            arguments[1].double_value;
                 case 'Y' :
-                    return BigDecimal.valueOf(Math.PI * Math.pow(arguments[0].BigDecimal_value.
-                            doubleValue(), 2));
+                    return Math.PI * Math.pow(arguments[0].double_value, 2);
                 case 'F' :
-                    return BigDecimal.valueOf(1.0/2.0 * arguments[0].BigDecimal_value.doubleValue() *
-                            arguments[1].BigDecimal_value.doubleValue());
+                    switch (identity){
+                        case 1 :
+                            return 1.0/2.0 * arguments[0].double_value *
+                                    arguments[1].double_value;
+                        case 2 :
+                            double a = arguments[0].double_value, b = arguments[1].double_value,
+                                    c = arguments[2].double_value;
+                            double smp = a + b + c;
+                            smp = smp/2;
+
+                            return Math.sqrt(smp * (smp - a) * (smp - b) * (smp-c));
+                    }
+                    return 0;
                 case 'z' :
-                    return BigDecimal.valueOf(2*(arguments[0].BigDecimal_value.doubleValue() +
-                            arguments[1].BigDecimal_value.doubleValue()));
+                    return 2*(arguments[0].double_value +
+                            arguments[1].double_value);
                 case 'y' :
-                    return BigDecimal.valueOf(2 * Math.PI * arguments[0].BigDecimal_value.doubleValue());
+                    return 2 * Math.PI * arguments[0].double_value;
                 case 'f' :
-                    return BigDecimal.valueOf(arguments[0].BigDecimal_value.doubleValue() +
-                            arguments[1].BigDecimal_value.doubleValue() +
-                            arguments[2].BigDecimal_value.doubleValue());
+                    return arguments[0].double_value +
+                            arguments[1].double_value +
+                            arguments[2].double_value;
                 case 'N' :
                     double[] values = new double[arguments.length];
                     for (int i = 0; i < arguments.length; i++){
-                        values[i] = arguments[i].BigDecimal_value.doubleValue();
+                        values[i] = arguments[i].double_value;
                     }
-                    return BigDecimal.valueOf(HCF(values));
+                    return HCF(values);
                 case 'n' :
                     double[] values1 = new double[arguments.length];
                     for (int i = 0; i < arguments.length; i++){
-                        values1[i] = arguments[i].BigDecimal_value.doubleValue();
+                        values1[i] = arguments[i].double_value;
                     }
-                    return BigDecimal.valueOf(LCM(values1));
+                    return LCM(values1);
                 case 'a' :
                     double[] values2 = new double[arguments.length];
                     for (int i = 0; i < arguments.length; i++){
-                        values2[i] = arguments[i].BigDecimal_value.doubleValue();
+                        values2[i] = arguments[i].double_value;
                     }
-                    return BigDecimal.valueOf(determinant(values2));
+                    return determinant(values2);
                 case 'b' :
-                    return BigDecimal.valueOf(1);
+                    return 1;
             }
-            return BigDecimal.ZERO;
+            return 0;
         }
 
         //that was all for the custom operator,
@@ -399,10 +416,21 @@ public class ExpressionEvaluator {
             this.argumentSize = argumentSize;
         }
 
+        operations(char operator, TYPE type, String functionName, int argumentSize, int function_identity){
+            this(operator, type, functionName, argumentSize);
+            this.function_identity = function_identity;
+        }
+
         operations(char operator, TYPE type, String functionName, boolean strictCase, int argumentSize,
                    int[] argumentType){
             this(operator, type, functionName, strictCase, argumentSize);
             this.argument_type = argumentType;
+        }
+
+        operations(char operator, TYPE type, String functionName, boolean strictCase, int argumentSize,
+                   int[] argumentType, int function_identity){
+            this(operator, type, functionName, strictCase, argumentSize, argumentType);
+            this.function_identity = function_identity;
         }
 
         operations(char operator, TYPE type, String functionName, int argumentSize, int[] argumentType){
@@ -420,6 +448,10 @@ public class ExpressionEvaluator {
                     return true;
             }
             return false;
+        }
+
+        public int getId(){
+            return function_identity;
         }
 
         //nothing of interest here.
@@ -452,13 +484,43 @@ public class ExpressionEvaluator {
             }
         }
 
+        /*
+        * integer at the first index represents the argument size of the function
+        * integer at the second index represents the function identity
+        * integer at the third index represents the length of the argument types
+        * integers from the fourth index and onward represents the types of the arguments.
+        */
+        public int[] getFunctionArguments(char operator){
+            int[] int_args_arr = new int[argumentSize == -1 ? 4 :
+                    argument_type.length == argumentSize ? argumentSize + 3 : 4];
+            if (isFunction(operator)){
+                int_args_arr[0] = argumentSize;
+                int_args_arr[1] = function_identity;
+                int_args_arr[2] = argument_type.length;
+                if (argumentSize != -1){
+                    if (argument_type.length > 1){
+                        System.arraycopy(argument_type, 0, int_args_arr,
+                                3, argument_type.length);
+                    }else {
+                        int_args_arr[3] = operations.ARGUMENT_DOUBLE;
+                    }
+                }else {
+                    int_args_arr[3] = operations.ARGUMENT_DOUBLE;
+                }
+                return int_args_arr;
+            }else {
+                throw new UnsupportedOperationException("Bad call : #getFunctionArguments should only be" +
+                        " called for functions and not for operators that work on operands.");
+            }
+        }
+
         static class argument{
-            public BigDecimal BigDecimal_value = BigDecimal.valueOf(0);
+            public double double_value = 0;
             public String string_value = "";
             public int argument_type = 1;
 
-            public argument(BigDecimal BigDecimal_value, String string_value, int argument_type){
-                this.BigDecimal_value = BigDecimal_value;
+            public argument(double double_value, String string_value, int argument_type){
+                this.double_value = double_value;
                 this.string_value = string_value;
                 this.argument_type = argument_type;
             }
@@ -575,8 +637,8 @@ public class ExpressionEvaluator {
         return multiplier;
     }
 
-    public static BigDecimal getRandom(){
-        return BigDecimal.valueOf(Math.random());
+    public static double getRandom(){
+        return Math.random();
         //given by a fairly rolled dice.
         //return BigDecimal.valueOf(4);
     }
@@ -726,6 +788,11 @@ public class ExpressionEvaluator {
             }
         }
         return finalValue;
+    }
+
+    public double getRationalisedDoubleValue(double value){
+
+        return 0;
     }
 
     //end of default functions
@@ -1047,27 +1114,103 @@ public class ExpressionEvaluator {
                 if(!isInBracket){
                     String[] array = subString.split(",");
                     operations.argument[] arguments = new operations.argument[array.length];
-                    if(whichOperator.argumentSize != -1 &&
+
+                    int function_identity = -1;
+
+                    ///////////////////////////////////////////////////////////////////////////////////////
+                    int[] args_array = new int[array.length];
+
+                    for (int j = 0; j < array.length; j++){
+                        try {
+                            double arg1 = Double.parseDouble(array[j]);
+                            arguments[j] = new operations.argument(arg1, null,
+                                    operations.ARGUMENT_DOUBLE);
+                            args_array[j] = operations.ARGUMENT_DOUBLE;
+                        }catch (NumberFormatException e){
+                            arguments[j] = new operations.argument(0, array[j],
+                                    operations.ARGUMENT_STRING);
+                            args_array[j] = operations.ARGUMENT_STRING;
+                        }
+                    }
+
+                    boolean matched = false;
+
+                    for (operations op : operations.values()){
+                        if (op.operator_type == operations.TYPE.FUNCTION &&
+                                op.evaluateSymbol(whichOperator.operator)){
+                            int[] functionArgs = op.getFunctionArguments(whichOperator.operator);
+                            boolean match_found = true;
+
+                            if (functionArgs[0] == -1){
+                                for (int k : args_array){
+                                    if (k == operations.ARGUMENT_STRING) {
+                                        match_found = false;
+                                        break;
+                                    }
+                                }
+                            }else {
+                                if (functionArgs[0] != args_array.length) {
+                                    match_found = false;
+                                }else {
+                                    if (functionArgs[2] == 1){
+                                        if (functionArgs[3] == operations.ARGUMENT_DOUBLE){
+                                            for (int value : args_array) {
+                                                if (value != operations.ARGUMENT_DOUBLE) {
+                                                    match_found = false;
+                                                    break;
+                                                }
+                                            }
+                                        } else if (functionArgs[3] == operations.ARGUMENT_STRING){
+                                            if (args_array.length > 1)
+                                                throw new IllegalArgumentException("functions accepting " +
+                                                        "strings as a parameter cannot define string as a default" +
+                                                        "parameter type for multiple parameters");
+                                            else
+                                                if (args_array[0] != operations.ARGUMENT_STRING)
+                                                    match_found = false;
+                                        }
+                                    }else {
+                                        for (int k = 0; k < args_array.length; k++){
+                                            if (functionArgs[k + 3] != args_array[k]) {
+                                                match_found = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (match_found){
+                                function_identity = functionArgs[1];
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!matched)
+                        throw new IllegalArgumentException("invalid arguments");
+
+                    ////////////////////////////////////////////////////////////////////////////////////////
+                    /*if(whichOperator.argumentSize != -1 &&
                             whichOperator.argumentSize != arguments.length){
                         throw new IllegalStateException("the provided argument length does"
                                 + " not match the required length of the argument");
                     }
                     for (int j = 0; j < array.length; j++) {
-
                         if(whichOperator.argumentSize == -1){
                             arguments[j] = new operations.argument(
-                                    BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))),
+                                    Double.parseDouble(Evaluate(array[j])),
                                     "", operations.ARGUMENT_DOUBLE);
                         }else{
                             if(whichOperator.argument_type.length > 1){
                                 switch (whichOperator.argument_type[j]) {
                                     case operations.ARGUMENT_DOUBLE:
                                         arguments[j] = new operations.argument(
-                                                BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))),
+                                                Double.parseDouble(Evaluate(array[j])),
                                                 "", operations.ARGUMENT_DOUBLE);
                                         break;
                                     case operations.ARGUMENT_STRING:
-                                        arguments[j] = new operations.argument(BigDecimal.valueOf(0), array[j],
+                                        arguments[j] = new operations.argument(0, array[j],
                                                 operations.ARGUMENT_STRING);
                                         break;
                                     default:
@@ -1075,12 +1218,12 @@ public class ExpressionEvaluator {
                                 }
                             }else{
                                 arguments[j] = new operations.argument(
-                                        BigDecimal.valueOf(Double.parseDouble(Evaluate(array[j]))),
+                                        Double.parseDouble(Evaluate(array[j])),
                                         "", operations.ARGUMENT_DOUBLE);
                             }
                         }
-                    }
-                    BigDecimal d = whichOperator.function(arguments);
+                    }*/
+                    double d = whichOperator.function(arguments, function_identity);
                     str += d;
                     isInFunction = false;
                 }
@@ -1092,7 +1235,7 @@ public class ExpressionEvaluator {
     }
 
     public static String evaluateOperation(String expression, boolean includeSimpleFunction){
-        Stack<BigDecimal> operand = new Stack<>(2);
+        Stack<Double> operand = new Stack<>(2);
         Stack<operations> operator = new Stack<>(1);
         stepData step_data = new stepData();
 
@@ -1288,7 +1431,7 @@ public class ExpressionEvaluator {
                         }
                     }
                 }else {
-                    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(step_data.currentOperand));
+                    double value = Double.parseDouble(step_data.currentOperand);
                     operand.push(value);
 
                     if (operator.pullFirst() != null) {
@@ -1317,7 +1460,7 @@ public class ExpressionEvaluator {
                             operator.popFirst();
 
                         } else {
-                            BigDecimal operatedValue = operator.pullFirst().function(operand.pull(0),
+                            double operatedValue = operator.pullFirst().function(operand.pull(0),
                                     operand.pull(1));
                             operand.popAll();
                             operand.push(operatedValue);
@@ -1330,7 +1473,7 @@ public class ExpressionEvaluator {
                 }
             }
         }
-        operand.push(BigDecimal.valueOf(Double.parseDouble(step_data.currentOperand)));
+        operand.push(Double.parseDouble(step_data.currentOperand));
 
         if(operator.pullFirst() == null){
             return String.valueOf(operand.pullFirst());
@@ -1351,7 +1494,7 @@ public class ExpressionEvaluator {
             builder += operator.pullFirst().operator;
             builder += operand.pull(1);
         }else{
-            BigDecimal d = operator.pullFirst().function(operand.pull(0),
+            double d = operator.pullFirst().function(operand.pull(0),
                     operand.pull(1));
             builder += d;
         }
@@ -1423,7 +1566,7 @@ public class ExpressionEvaluator {
         return builder;
     }
 
-    private static BigDecimal simpleSolver(String expression, Stack<BigDecimal> operand,
+    private static double simpleSolver(String expression, Stack<Double> operand,
                                            Stack<operations> operator, stepData step_data){
         for(int i = 0; i < expression.length(); i++){
             if (i == 0){
@@ -1452,14 +1595,14 @@ public class ExpressionEvaluator {
                         step_data.increementDouble(String.valueOf(expression.charAt(i)));
                     }
                 }else {
-                    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(step_data.currentOperand));
+                    double value = Double.parseDouble(step_data.currentOperand);
                     operand.push(value);
 
                     if(operator.pullFirst() == null){
                         operator.push(whichOperator);
                         step_data.setStepData(whichOperator);
                     }else {
-                        BigDecimal operatedValue = operator.pullFirst().function(operand.pull(0),
+                        double operatedValue = operator.pullFirst().function(operand.pull(0),
                                 operand.pull(1));
                         operand.popAll();
                         operand.push(operatedValue);
@@ -1471,11 +1614,11 @@ public class ExpressionEvaluator {
                 }
             }
         }
-        operand.push(BigDecimal.valueOf(Double.parseDouble(step_data.currentOperand)));
+        operand.push(Double.parseDouble(step_data.currentOperand));
         if (operator.isEmpty()){
             return operand.pullFirst();
         }
-        BigDecimal d1 = operator.pullFirst().function(operand.pull(0),
+        double d1 = operator.pullFirst().function(operand.pull(0),
                 operand.pull(1));
         return d1;
     }
@@ -1608,3 +1751,4 @@ public class ExpressionEvaluator {
         }
     }
 }
+
